@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Free Fire Achievements Library</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@700;900&family=Poppins:wght@700&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #040d1f;
+      --text: #e0e8f2;
+      --muted: #9cb8d6;
+      --accent: #4a78c2;
+      --accent-gold: #ffba00;
+      --border: rgba(255, 255, 255, 0.09);
+      --radius: 12px;
+      --font-en: 'Roboto', sans-serif;
+      --font-ar: 'Cairo', sans-serif;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html {
+      background-color: #020813;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    
+    body {
+      width: 100%;
+      max-width: 480px;
+      margin: 0;
+      background: var(--bg) url('assets/FF_UI_Achievement.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: var(--text);
+      font-family: var(--font-en);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    }
+
+    body[dir="rtl"],
+    body[dir="rtl"] .nav-tab,
+    body[dir="rtl"] .category-title,
+    body[dir="rtl"] .points-display,
+    body[dir="rtl"] .points-subtext,
+    body[dir="rtl"] .sub-title,
+    body[dir="rtl"] .ach-name,
+    body[dir="rtl"] .modal-header-title,
+    body[dir="rtl"] .lvl-desc,
+    body[dir="rtl"] .modal-item-title,
+    body[dir="rtl"] .multi-line-text,
+    body[dir="rtl"] .single-line-text,
+    body[dir="rtl"] .modal-details strong,
+    body[dir="rtl"] .modal-details span,
+    body[dir="rtl"] .rew-header,
+    body[dir="rtl"] .rew-tab,
+    body[dir="rtl"] .rew-req,
+    body[dir="rtl"] .rew-curr-pts,
+    body[dir="rtl"] .rew-desc,
+    body[dir="rtl"] .event-modal-desc,
+    body[dir="rtl"] .custom-select,
+    body[dir="rtl"] button,
+    body[dir="rtl"] input,
+    body[dir="rtl"] select {
+      font-family: var(--font-ar) !important;
+    }
+
+    .overlay, .loader-container, .modal {
+      position: fixed; inset: 0; margin: 0 auto; width: 100%; max-width: 480px;
+    }
+
+    .overlay {
+      background: rgba(4, 13, 31, 0.85); z-index: -1;
+    }
+
+    .loader-container {
+      background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 1000; transition: opacity 0.4s ease;
+    }
+
+    .loader {
+      width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    .top-nav {
+      position: sticky; top: 0; z-index: 50; width: 100%; display: flex; background: rgba(7, 25, 50, 0.95);
+      border-bottom: 1px solid var(--border); padding: 0 10px; overflow-x: auto; backdrop-filter: blur(10px);
+      -webkit-overflow-scrolling: touch; white-space: nowrap;
+    }
+
+    .top-nav::-webkit-scrollbar { display: none; }
+
+    .nav-tab {
+      padding: 15px 20px; color: var(--muted); font-weight: 700; cursor: pointer; text-transform: uppercase;
+      border-bottom: 3px solid transparent; transition: all 0.3s ease; letter-spacing: 1px; font-size: 0.9rem;
+    }
+
+    body[dir="rtl"] .nav-tab { letter-spacing: 0; }
+    .nav-tab:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+    .nav-tab.active { color: var(--accent-gold); border-bottom-color: var(--accent-gold); background: linear-gradient(to top, rgba(255, 186, 0, 0.1), transparent); }
+
+    .main-layout {
+      display: flex; flex: 1; flex-direction: column; padding: 15px; gap: 15px; height: auto; overflow: visible;
+    }
+
+    .left-capsule {
+      width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
+      background: rgba(7, 25, 50, 0.6); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 15px; backdrop-filter: blur(5px); transition: all 0.3s ease; position: relative; height: auto;
+    }
+
+    .gift-btn {
+      position: absolute; top: 15px; inset-inline-end: 15px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; z-index: 10;
+    }
+    .gift-btn:hover { background: #fff; color: #000; transform: scale(1.1); box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
+
+    .left-capsule-top { display: flex; flex-direction: column; align-items: center; width: 100%; }
+
+    .category-title { color: var(--muted); font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 5px; text-transform: uppercase; text-align: center; }
+    body[dir="rtl"] .category-title { letter-spacing: 0; font-weight: 700; }
+
+    .points-display {
+      font-family: 'Montserrat', sans-serif; font-size: 2.5rem; font-weight: 900; color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px; text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    .points-display svg { width: 30px; height: 30px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+
+    .points-subtext { color: var(--muted); font-size: 0.65rem; text-align: center; margin-bottom: 10px; }
+
+    .capsule-image-container { position: relative; width: 100%; display: flex; justify-content: center; align-items: center; margin-top: 15px; margin-bottom: 15px; }
+
+    .capsule-bg { display: none; }
+
+    .capsule-icon {
+      width: 160px; max-height: 200px; object-fit: contain; z-index: 2; filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4)); animation: float 3s ease-in-out infinite; transition: all 0.3s ease;
+    }
+    .capsule-icon.ee-small-scale { width: 110px !important; max-height: 130px !important; }
+
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+    .capsule-footer { display: flex; justify-content: center; align-items: center; width: 100%; position: relative; margin-top: auto; padding-top: 10px; }
+
+    .lang-btn {
+      position: absolute; inset-inline-start: 0; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
+    }
+    .lang-btn:hover { background: rgba(255,255,255,0.2); border-color: #fff; }
+
+    .sub-title { font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 700; color: #FFD700; letter-spacing: 1px; animation: glowEffect 1.5s ease-in-out infinite alternate; text-align: center; width: 100%; }
+    body[dir="rtl"] .sub-title { letter-spacing: 0; }
+
+    @keyframes glowEffect { from { text-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } to { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6); } }
+
+    .right-content { flex: 1; display: flex; flex-direction: column; position: relative; }
+
+    .filters-bar { display: flex; justify-content: flex-end; margin-bottom: 15px; min-height: 40px; }
+
+    .custom-select { background: rgba(0, 0, 0, 0.6); color: var(--text); border: 1px solid var(--border); padding: 8px 15px; border-radius: 8px; outline: none; font-size: 0.85rem; cursor: pointer; width: 100%; }
+
+    .achievements-grid { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-flow: row; grid-template-rows: auto; gap: 12px; padding-bottom: 15px; height: auto; overflow: visible; }
+
+    .ach-card {
+      background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; position: relative;
+    }
+    .ach-card:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--accent-gold); transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5); }
+
+    .ach-icon-wrapper { width: 70px; height: 70px; margin-bottom: 12px; display: flex; justify-content: center; align-items: center; position: relative; }
+    .ach-icon { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
+
+    .ee-small-icon { position: absolute; bottom: -5px; inset-inline-end: -10px; width: 25px; height: 25px; filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.8)); }
+
+    .ach-name { font-size: 0.75rem; text-align: center; text-transform: uppercase; font-weight: 700; color: #fff; }
+
+    .ach-card.easter-egg .ach-icon { filter: brightness(0) invert(1) opacity(0.5); }
+    .ach-card.easter-egg .ach-name { color: var(--muted); letter-spacing: 5px; }
+    body[dir="rtl"] .ach-card.easter-egg .ach-name { letter-spacing: 0; }
+
+    .event-grid-override { grid-template-columns: 1fr; }
+    
+    .event-card { padding: 0; justify-content: flex-start; overflow: hidden; height: 200px; }
+    .event-banner { width: 100%; height: 130px; object-fit: cover; border-bottom: 1px solid var(--border); }
+    .event-info { padding: 12px; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+
+    .modal {
+      display: none; background-color: rgba(2, 6, 15, 0.85); backdrop-filter: blur(5px); align-items: center; justify-content: center; padding: 20px 10px; z-index: 100;
+    }
+    #rewardsModal { z-index: 150; }
+    #itemModal { z-index: 200; }
+
+    .base-modal-content {
+      background: rgba(7, 25, 50, 0.95); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; 
+      padding: 60px 15px 25px 15px; width: 92%; max-width: 440px; position: relative; max-height: 85vh; overflow-y: auto; overflow-x: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6); animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin: auto;
+    }
+
+    .ach-modal-content { display: flex; flex-direction: column; }
+    .item-modal-content { max-width: 440px; }
+
+    @keyframes modalPop { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    .close-btn { position: absolute; top: 15px; inset-inline-end: 15px; color: #fff; font-size: 35px; cursor: pointer; transition: all 0.2s; z-index: 101; line-height: 1; }
+    .close-btn:hover { color: #ef4444; transform: scale(1.1); }
+
+    .modal-header-title { text-align: center; color: var(--accent-gold); text-transform: uppercase; margin-bottom: 25px; letter-spacing: 2px; white-space: normal; word-wrap: break-word; width: 100%; font-weight: 900; font-size: 1.2rem; }
+    body[dir="rtl"] .modal-header-title { letter-spacing: 0; }
+
+    .easter-egg-badge { position: relative; margin: 0 auto 15px auto; background: rgba(139, 92, 246, 0.2); border: 1px solid #8b5cf6; color: #c4b5fd; padding: 5px 15px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; display: inline-flex; align-items: center; gap: 10px; }
+    .easter-egg-badge img { width: 18px; height: 18px; }
+
+    .levels-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; width: 100%; overflow: visible; padding-bottom: 10px; }
+
+    .level-box {
+      width: 100%; display: flex; flex-direction: column; align-items: center; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.4)); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px 10px; position: relative;
+    }
+
+    .lvl-icon { width: 90px; height: 90px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); }
+    .lvl-desc { text-align: center; font-size: 0.85rem; line-height: 1.5; color: var(--text); margin-bottom: 15px; width: 100%; word-wrap: break-word; }
+
+    .lvl-pts-container { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1.1rem; font-weight: bold; color: #fff; height: 30px; margin-bottom: 15px; }
+    .lvl-pts-container svg { width: 20px; height: 20px; }
+
+    .lvl-divider { width: 80%; height: 1px; background: rgba(255, 255, 255, 0.1); margin: 0 auto 15px auto; }
+
+    .lvl-reward-wrapper { height: 60px; display: flex; align-items: center; justify-content: center; width: 100%; }
+
+    .has-award { width: 55px; height: 55px; border-radius: 8px; border: 1px solid var(--border); padding: 5px; cursor: pointer; transition: all 0.2s; position: relative; z-index: 10; }
+    .has-award:hover { border-color: var(--accent); transform: scale(1.05); box-shadow: 0 0 10px rgba(74, 120, 194, 0.5); }
+    .has-award img { width: 100%; height: 100%; object-fit: contain; }
+
+    .lvl-arrow { color: #8b5cf6; font-size: 2rem; font-weight: 900; opacity: 0.5; display: flex; align-items: center; transform: rotate(90deg); justify-content: center; margin: 5px 0; }
+
+    .event-modal-wrapper { display: flex; flex-direction: column; align-items: center; background: rgba(7, 25, 50, 0.9); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; width: 100%; max-width: 100%; margin: 0 auto; }
+    .event-modal-banner { width: 100%; height: auto; max-height: 180px; object-fit: cover; border-bottom: 1px solid var(--border); }
+    .event-modal-body { padding: 20px 15px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
+    .event-modal-desc { font-size: 0.85rem; color: var(--text); }
+
+    .modal-icon-container { width: 100%; height: 180px; display: flex; justify-content: center; align-items: center; margin-bottom: 25px; border-radius: var(--radius); background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.3) 100%); border: 1px dashed rgba(255,255,255,0.1); }
+    .modal-float-wrapper { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; animation: floatWrapper 3s ease-in-out infinite; }
+    @keyframes floatWrapper { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+
+    .modal-item-icon { max-width: 150px; max-height: 150px; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.7)); transition: transform 0.3s ease, opacity 0.2s ease; }
+    .modal-item-icon.weapon-tilt { transform: rotate(25deg) scale(1.4); }
+    .modal-item-icon.unknown-scale { transform: scale(0.3); }
+
+    .modal-item-title { text-align: center; margin-bottom: 20px; font-weight: 900; color: #fff; padding-bottom: 5px; white-space: nowrap; font-size: 1.1rem; }
+
+    .modal-details { background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); width: 100%; }
+    .single-line-text { display: flex; align-items: center; white-space: nowrap; margin-bottom: 12px; padding-bottom: 4px; width: 100%; overflow: hidden; }
+    .multi-line-text { margin-bottom: 0; line-height: 1.6; word-wrap: break-word; white-space: normal; display: block; }
+
+    .modal-details strong { color: #fff; margin-inline-end: 8px; flex-shrink: 0; font-size: 0.95rem; }
+    .modal-details span { color: var(--muted); font-size: 0.8rem; }
+
+    .copy-btn { background: transparent; border: none; color: var(--accent); margin-inline-start: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; flex-shrink: 0; }
+    .copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    .rewards-modal-content { padding: 0; overflow: hidden; flex-direction: column; }
+    .rew-header { background: #e0e0e0; color: #000; padding: 20px 50px 20px 20px; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.1rem; position: relative; text-transform: uppercase; text-align: center; }
+    body[dir="rtl"] .rew-header { padding: 20px 20px 20px 50px; }
+    .rew-header .close-btn { top: 50%; transform: translateY(-50%); inset-inline-end: 15px; color: #000; font-size: 30px; }
+    .rew-header .close-btn:hover { color: #ef4444; }
+    
+    .rew-body { display: flex; flex-direction: column; height: 75vh; min-height: 400px; background: #111; }
+    .rew-sidebar { width: 100%; flex-direction: row; overflow-x: auto; flex-shrink: 0; background: #0a0a0a; display: flex; }
+    .rew-sidebar::-webkit-scrollbar { display: none; }
+    
+    .rew-tab { padding: 15px; color: #888; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; text-transform: uppercase; white-space: nowrap; border-bottom: 3px solid transparent; }
+    .rew-tab.active { color: var(--accent-gold); border-bottom-color: var(--accent-gold); background: rgba(255, 186, 0, 0.1); }
+    
+    .rew-main { flex: 1; background: #1a1a24; display: flex; flex-direction: column; overflow: hidden; }
+    .rew-main-header { padding: 15px; background: rgba(0,0,0,0.3); border-bottom: 2px dashed #333; text-align: center; }
+    .rew-curr-pts { color: #fff; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1rem; margin-bottom: 5px; }
+    .rew-curr-pts svg { width: 18px; height: 18px; }
+    .rew-desc { color: #aaa; font-size: 0.75rem; text-transform: uppercase; }
+    
+    .rew-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+    .rew-row { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .rew-req { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: bold; font-size: 0.95rem; }
+    .rew-req img { width: 35px; height: 35px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
+    .rew-awards { display: flex; gap: 8px; }
+    .rew-awards .lvl-reward-wrapper { height: 45px; }
+    .rew-awards .has-award { width: 45px; height: 45px; }
+  </style>
+</head>
+<body>
+
+  <div class="overlay"></div>
+
+  <div id="mainLoader" class="loader-container">
+    <div class="loader"></div>
+  </div>
+
+  <div class="top-nav" id="topNav">
+    <div class="nav-tab active" data-tab="ALL">ALL</div>
+    <div class="nav-tab" data-tab="Type_BATTALE">BATTLE</div>
+    <div class="nav-tab" data-tab="Type_COLLECTION">COLLECTOR</div>
+    <div class="nav-tab" data-tab="Type_CAREER">CAREER</div>
+    <div class="nav-tab" data-tab="Type_YEAR">SEASON-EXCLUSIVE</div>
+    <div class="nav-tab" data-tab="EASTER_EGG">EASTER EGG</div>
+    <div class="nav-tab" data-tab="Type_EVENT">EVENT</div>
+  </div>
+
+  <div class="main-layout">
+    <div class="left-capsule" id="leftCapsule">
+      <button class="gift-btn" id="btnGift" onclick="openRewardsModal()" title="Category Rewards">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+      </button>
+
+      <div class="left-capsule-top">
+        <div class="category-title" id="lblCategory">- ALL -</div>
+        <div class="points-display-wrapper">
+          <div class="points-display" id="pointsDisplay">
+            <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM7 10.82C5.84 10.4 5 9.3 5 8V7h2v3.82zM19 8c0 1.3-.84 2.4-2 2.82V7h2v1z"/>
+            </svg>
+            <span id="lblPoints">0</span>
+          </div>
+        </div>
+        <div class="points-subtext" id="pointsSubtext">Total Achievement Points available in this section</div>
+      </div>
+      
+      <div class="capsule-image-container">
+        <div class="capsule-bg"></div>
+        <img id="imgCapsule" src="assets/OVERALL-POINTS.png" class="capsule-icon" alt="icon">
+      </div>
+      
+      <div class="capsule-footer">
+        <button class="lang-btn" onclick="toggleLanguage()" title="Change Language">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M2 12H22"></path><path d="M12 2C14.5013 4.73835 15.9228 8.29203 16 12C15.9228 15.708 14.5013 19.2616 12 22C9.49872 19.2616 8.07725 15.708 8 12C8.07725 8.29203 9.49872 4.73835 12 2Z"></path></svg>
+        </button>
+        <div class="sub-title" id="txtSubTitle">Made By King of Games</div>
+      </div>
+    </div>
+
+    <div class="right-content">
+      <div class="filters-bar" id="filtersBar"></div>
+      <div class="achievements-grid" id="mainGrid"></div>
+    </div>
+  </div>
+
+  <div id="achModal" class="modal">
+    <div class="base-modal-content ach-modal-content" id="achModalContent">
+      <span class="close-btn" onclick="closeModal('achModal')">&times;</span>
+      <div id="easterEggBadge" class="easter-egg-badge" style="display: none;">
+        <img src="assets/EasterEgg2.png" alt="EE"> <span id="lblEeBadge">EASTER EGG ACHIEVEMENT</span>
+      </div>
+      <h2 class="modal-header-title" id="modalTitle"></h2>
+      <div class="levels-container" id="modalLevels"></div>
+    </div>
+  </div>
+
+  <div id="rewardsModal" class="modal">
+    <div class="base-modal-content rewards-modal-content">
+        <div class="rew-header">
+            <span id="rewHeaderTitle">ACHIEVEMENT CATEGORY REWARDS</span>
+            <span class="close-btn" onclick="closeModal('rewardsModal')">&times;</span>
+        </div>
+        <div class="rew-body">
+            <div class="rew-sidebar">
+                <div class="rew-tab" data-target="totalAchLevelConfig" onclick="switchRewardsTab('totalAchLevelConfig')" id="tabRewAll">OVERALL POINTS</div>
+                <div class="rew-tab" data-target="battleAchLevelConfig" onclick="switchRewardsTab('battleAchLevelConfig')" id="tabRewBattle">BATTLE</div>
+                <div class="rew-tab" data-target="collectionAchLevelConfig" onclick="switchRewardsTab('collectionAchLevelConfig')" id="tabRewCollector">COLLECTOR</div>
+                <div class="rew-tab" data-target="careerAchLevelConfig" onclick="switchRewardsTab('careerAchLevelConfig')" id="tabRewCareer">CAREER</div>
+            </div>
+            <div class="rew-main">
+                <div class="rew-main-header">
+                    <div class="rew-curr-pts" id="rewCurrentPoints"></div>
+                    <div class="rew-desc" id="rewAttainDesc">Attain achievements to earn achievement points and receive more rewards!</div>
+                </div>
+                <div class="rew-list" id="rewardsList"></div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <div id="itemModal" class="modal">
+    <div class="base-modal-content item-modal-content">
+      <span class="close-btn" onclick="closeModal('itemModal')">&times;</span>
+      <div class="modal-icon-container" id="itemRarityBg">
+        <div class="modal-float-wrapper">
+          <img id="modalItemIcon" src="" class="modal-item-icon" alt="icon" crossorigin="anonymous">
+        </div>
+      </div>
+      <h2 class="modal-item-title" id="modalItemName"></h2>
+      <div class="modal-details">
+        <div class="single-line-text">
+          <strong id="lblItemId">Item id:</strong> <span id="modalItemId"></span>
+          <button class="copy-btn" id="btnCopyId" onclick="copyItemId()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+          </button>
+        </div>
+        <div class="single-line-text"><strong id="lblIconId">Icon id:</strong> <span id="modalItemIconId"></span></div>
+        <div class="multi-line-text"><strong id="lblDesc">Description:</strong> <span id="modalItemDesc"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tr = {
+      en: {
+        tabs: { ALL: "ALL", Type_BATTALE: "BATTLE", Type_COLLECTION: "COLLECTOR", Type_CAREER: "CAREER", Type_YEAR: "SEASON-EXCLUSIVE", EASTER_EGG: "EASTER EGG", Type_EVENT: "EVENT" },
+        pointsSub: "Total Achievement Points available in this section",
+        madeBy: "Made By King of Games",
+        eeBadge: "EASTER EGG ACHIEVEMENT",
+        eventDesc: "Complete tasks during the event and win the grand prize to obtain",
+        itemId: "Item id:",
+        iconId: "Icon id:",
+        desc: "Description:",
+        noDesc: "No description available.",
+        unknownItem: "Unknown Item",
+        filters: { allYears: "ALL YEARS", allEvents: "ALL EVENTS", anniv: "ANNIVERSARY EVENTS", collab: "COLLABORATION EVENTS", other: "OTHER EVENTS" },
+        rewardsTitle: "ACHIEVEMENT CATEGORY REWARDS",
+        rewPointsDesc: "Total Points available in this section:",
+        rewAttainDesc: "Attain achievements to earn achievement points and receive more rewards!",
+        pts: "Points"
+      },
+      ar: {
+        tabs: { ALL: "الكل", Type_BATTALE: "المعركة", Type_COLLECTION: "الجمع", Type_CAREER: "المسيرة", Type_YEAR: "حصري للموسم", EASTER_EGG: "إنجازات سرية", Type_EVENT: "الحدث" },
+        pointsSub: "إجمالي نقاط الإنجازات المتاحة في هذا القسم",
+        madeBy: "تطوير King of Games",
+        eeBadge: "إنجاز سري",
+        eventDesc: "أكمل المهام خلال الحدث واربح الجائزة الكبرى للحصول على",
+        itemId: "معرف العنصر:",
+        iconId: "معرف الأيقونة:",
+        desc: "الوصف:",
+        noDesc: "لا يوجد وصف متاح.",
+        unknownItem: "عنصر غير معروف",
+        filters: { allYears: "جميع السنوات", allEvents: "جميع الأحداث", anniv: "أحداث الذكرى السنوية", collab: "أحداث التعاون", other: "أحداث أخرى" },
+        rewardsTitle: "جوائز فئات الإنجازات",
+        rewPointsDesc: "إجمالي النقاط المتاحة في هذا القسم:",
+        rewAttainDesc: "حقق الإنجازات لكسب نقاط الإنجاز والحصول على المزيد من الجوائز!",
+        pts: "نقطة"
+      }
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentLang = urlParams.get('lang') === 'ar' ? 'ar' : 'en';
+    const isAr = currentLang === 'ar';
+    const t = tr[currentLang];
+    
+    document.body.setAttribute('dir', isAr ? 'rtl' : 'ltr');
+
+    const DATA_URL = isAr ? "GetAllAchievementDesc_ar.json" : "GetAllAchievementDesc.json";
+    const ICONS_DIR = "ff-achievement/";
+    const ITEMS_BASE_URL = "https://kingofgames02.github.io/Free-Fire-Items-Library/";
+    const ITEMS_DATA_URL = ITEMS_BASE_URL + (isAr ? "ItemsData_ar.json" : "ItemsData_en.json");
+    const UPDATED_ICONS_URL = ITEMS_BASE_URL + "updated_icons.json";
+    
+    let fullData = null;
+    let groupedAchievements = new Map();
+    let currentTab = "ALL";
+    let currentFilter = "ALL";
+    
+    let itemsMap = new Map();
+    let updatedIconsSet = new Set();
+    let currentOpenItemId = null;
+
+    const rarityMap = {
+      "White": "COMMON", "Green": "UNCOMMON", "Blue": "RARE",
+      "Purple": "EPIC", "Orange": "MYTHIC", "Red": "ARTIFACT",
+      "Purple_Plus": "EPIC++", "Orange_Plus": "MYTHIC++",
+      "NONE": "NONE", "Card": "Card"
+    };
+
+    const copyIconSVG = `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`;
+    const checkIconSVG = `<svg width="18" height="18" fill="none" stroke="#10b981" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>`;
+    const svgCup = `<svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM7 10.82C5.84 10.4 5 9.3 5 8V7h2v3.82zM19 8c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>`;
+    
+    const elements = {
+      loader: document.getElementById('mainLoader'),
+      nav: document.getElementById('topNav'),
+      grid: document.getElementById('mainGrid'),
+      leftCapsule: document.getElementById('leftCapsule'),
+      lblCategory: document.getElementById('lblCategory'),
+      lblPoints: document.getElementById('lblPoints'),
+      pointsDisplay: document.getElementById('pointsDisplay'),
+      pointsSubtext: document.getElementById('pointsSubtext'),
+      imgCapsule: document.getElementById('imgCapsule'),
+      filtersBar: document.getElementById('filtersBar'),
+      achModal: document.getElementById('achModal'),
+      modalTitle: document.getElementById('modalTitle'),
+      modalLevels: document.getElementById('modalLevels'),
+      easterEggBadge: document.getElementById('easterEggBadge'),
+      itemModal: document.getElementById('itemModal'),
+      rewardsModal: document.getElementById('rewardsModal'),
+      btnGift: document.getElementById('btnGift')
+    };
+
+    function toggleLanguage() {
+        const url = new URL(window.location);
+        url.searchParams.set('lang', isAr ? 'en' : 'ar');
+        window.location.href = url.toString();
+    }
+
+    function applyTranslations() {
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.textContent = t.tabs[tab.dataset.tab];
+        });
+        document.getElementById('pointsSubtext').textContent = t.pointsSub;
+        document.getElementById('txtSubTitle').textContent = t.madeBy;
+        document.getElementById('lblEeBadge').textContent = t.eeBadge;
+        document.getElementById('lblItemId').textContent = t.itemId;
+        document.getElementById('lblIconId').textContent = t.iconId;
+        document.getElementById('lblDesc').textContent = t.desc;
+        document.getElementById('rewHeaderTitle').textContent = t.rewardsTitle;
+        document.getElementById('rewAttainDesc').textContent = t.rewAttainDesc;
+        document.getElementById('tabRewAll').textContent = t.tabs.ALL;
+        document.getElementById('tabRewBattle').textContent = t.tabs.Type_BATTALE;
+        document.getElementById('tabRewCollector').textContent = t.tabs.Type_COLLECTION;
+        document.getElementById('tabRewCareer').textContent = t.tabs.Type_CAREER;
+    }
+
+    function parseHtmlColor(text) {
+      if (!text) return "";
+      let formatted = text.replace(/\[([a-fA-F0-9]{6})\]/g, '<span style="color: #$1;">');
+      formatted = formatted.replace(/\[-\]/g, '</span>');
+      return formatted;
+    }
+
+    function getFileName(url) {
+      if (!url) return "";
+      return url.split('/').pop().replace('.ff_extend', '.jpg');
+    }
+
+    async function init() {
+      applyTranslations();
+      try {
+        const [achRes, itemsRes, upRes] = await Promise.all([
+          fetch(DATA_URL).catch(() => null),
+          fetch(ITEMS_DATA_URL).catch(() => null),
+          fetch(UPDATED_ICONS_URL).catch(() => null)
+        ]);
+        
+        if (achRes && achRes.ok) fullData = await achRes.json();
+        
+        if (itemsRes && itemsRes.ok) {
+          const itemsRaw = await itemsRes.json();
+          const itemsArray = Array.isArray(itemsRaw) ? itemsRaw : Object.values(itemsRaw);
+          itemsArray.forEach(item => {
+            if (item.Id) itemsMap.set(item.Id.toString(), item);
+          });
+        }
+        
+        if (upRes && upRes.ok) {
+          const upArr = await upRes.json();
+          updatedIconsSet = new Set(upArr);
+        }
+
+        processData();
+        setupTabs();
+        renderTab("ALL");
+      } catch (e) {
+        console.error(e);
+      } finally {
+        elements.loader.style.opacity = '0';
+        setTimeout(() => elements.loader.style.display = 'none', 400);
+      }
+    }
+
+    function processData() {
+      if (!fullData) return;
+      const entries = fullData.achEntriesDesc || [];
+      entries.forEach(item => {
+        if (!groupedAchievements.has(item.id)) {
+          groupedAchievements.set(item.id, { base: null, levels: [] });
+        }
+        const group = groupedAchievements.get(item.id);
+        if (!item.level) {
+          group.base = item;
+        } else {
+          group.levels.push(item);
+        }
+      });
+
+      groupedAchievements.forEach(group => {
+        group.levels.sort((a, b) => a.level - b.level);
+        if (!group.base && group.levels.length > 0) {
+          group.base = group.levels[0]; 
+        }
+      });
+    }
+
+    function setupTabs() {
+      elements.nav.addEventListener('click', (e) => {
+        if (e.target.classList.contains('nav-tab')) {
+          document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+          e.target.classList.add('active');
+          currentTab = e.target.dataset.tab;
+          currentFilter = "ALL";
+          renderTab(currentTab);
+        }
+      });
+    }
+
+    function renderTab(tabId) {
+      elements.filtersBar.innerHTML = '';
+      elements.grid.classList.remove('event-grid-override');
+      
+      let filtered = [];
+      let totalPts = 0;
+      let title = "- " + t.tabs.ALL + " -";
+      let icon = "assets/OVERALL-POINTS.png";
+      elements.imgCapsule.classList.remove('ee-small-scale');
+
+      const arr = Array.from(groupedAchievements.values());
+
+      if (tabId === "ALL") {
+        filtered = arr.filter(g => ["Type_BATTALE", "Type_COLLECTION", "Type_CAREER"].includes(g.base.achType));
+      } else if (tabId === "EASTER_EGG") {
+        filtered = arr.filter(g => g.base.achievementSubType === 29);
+      } else {
+        filtered = arr.filter(g => g.base.achType === tabId);
+      }
+
+      elements.leftCapsule.style.display = (tabId === "Type_EVENT") ? "none" : "flex";
+
+      if (tabId === "Type_YEAR") {
+        title = "- " + t.tabs.Type_YEAR + " -";
+        icon = "assets/SEASON-EXCLUSIVE.png";
+        elements.pointsDisplay.style.display = "none";
+        elements.pointsSubtext.style.display = "none";
+        elements.btnGift.style.display = "none";
+        renderSeasonFilter();
+        if (currentFilter !== "ALL") {
+          filtered = filtered.filter(g => {
+            const yId = g.base.conditions?.seasonYearId;
+            const config = fullData.seasonYearConfig.find(c => c.seasonYearId === yId);
+            return config && config.year.toString() === currentFilter;
+          });
+        }
+      } else if (tabId === "Type_EVENT") {
+        elements.grid.classList.add('event-grid-override');
+        renderEventFilter();
+        if (currentFilter !== "ALL") {
+          filtered = filtered.filter(g => g.base.achievementSubType.toString() === currentFilter);
+        }
+      } else if (tabId === "EASTER_EGG") {
+        title = "- " + t.tabs.EASTER_EGG + " -";
+        icon = "assets/EasterEgg1.png";
+        elements.imgCapsule.classList.add('ee-small-scale');
+        elements.pointsDisplay.style.display = "flex";
+        elements.pointsSubtext.style.display = "block";
+        elements.btnGift.style.display = "none";
+      } else {
+        elements.pointsDisplay.style.display = "flex";
+        elements.pointsSubtext.style.display = "block";
+        elements.btnGift.style.display = "flex";
+        if (tabId === "Type_BATTALE") {
+          title = "- " + t.tabs.Type_BATTALE + " -";
+          icon = "assets/BATTLE.png";
+        } else if (tabId === "Type_COLLECTION") {
+          title = "- " + t.tabs.Type_COLLECTION + " -";
+          icon = "assets/COLLECTOR.png";
+        } else if (tabId === "Type_CAREER") {
+          title = "- " + t.tabs.Type_CAREER + " -";
+          icon = "assets/CAREER.png";
+        }
+      }
+
+      if (tabId !== "Type_YEAR" && tabId !== "Type_EVENT") {
+        filtered.forEach(g => {
+          g.levels.forEach(l => {
+            if(l.conditions && l.conditions.achievementPoints) totalPts += l.conditions.achievementPoints;
+          });
+          if(g.base.achievementSubType === 29 && g.levels.length === 0) totalPts += 100;
+        });
+      }
+
+      filtered.sort((a, b) => {
+        if (a.base.sort !== b.base.sort) return (a.base.sort || 999) - (b.base.sort || 999);
+        return (a.base.name || "").localeCompare(b.base.name || "", 'en');
+      });
+
+      elements.lblCategory.textContent = title;
+      elements.lblPoints.textContent = totalPts;
+      elements.imgCapsule.src = icon;
+
+      renderGrid(filtered);
+    }
+
+    function renderSeasonFilter() {
+      const select = document.createElement('select');
+      select.className = "custom-select";
+      select.innerHTML = `<option value="ALL">${t.filters.allYears}</option>`;
+      const years = [...new Set(fullData.seasonYearConfig.map(c => c.year))].sort().reverse();
+      years.forEach(y => {
+        select.innerHTML += `<option value="${y}">${y}</option>`;
+      });
+      select.value = currentFilter;
+      select.addEventListener('change', (e) => {
+        currentFilter = e.target.value;
+        renderTab("Type_YEAR");
+      });
+      elements.filtersBar.appendChild(select);
+    }
+
+    function renderEventFilter() {
+      const select = document.createElement('select');
+      select.className = "custom-select";
+      select.innerHTML = `
+        <option value="ALL">${t.filters.allEvents}</option>
+        <option value="61">${t.filters.anniv}</option>
+        <option value="69">${t.filters.collab}</option>
+        <option value="62">${t.filters.other}</option>
+      `;
+      select.value = currentFilter;
+      select.addEventListener('change', (e) => {
+        currentFilter = e.target.value;
+        renderTab("Type_EVENT");
+      });
+      elements.filtersBar.appendChild(select);
+    }
+
+    function renderGrid(groups) {
+      elements.grid.innerHTML = '';
+      groups.forEach(g => {
+        const isEvent = g.base.achType === "Type_EVENT";
+        const isEasterEgg = g.base.achievementSubType === 29;
+        const isObfuscated = isEasterEgg && currentTab !== "EASTER_EGG";
+        const baseName = parseHtmlColor(g.base.name);
+        const imgName = getFileName(g.base.iconCdn);
+        
+        let cardHtml = '';
+        
+        if (isEvent) {
+          cardHtml = `
+            <div class="ach-card event-card" onclick="openAchModal(${g.base.id})">
+              <img src="${ICONS_DIR}${imgName}" class="event-banner" alt="Event">
+              <div class="event-info">
+                <div class="ach-name">${baseName}</div>
+                ${g.base.eventStartTime ? `<div class="ach-status">${g.base.eventStartTime}</div>` : ''}
+              </div>
+            </div>
+          `;
+        } else if (isObfuscated) {
+          cardHtml = `
+            <div class="ach-card easter-egg" onclick="openAchModal(${g.base.id})">
+              <div class="ach-icon-wrapper">
+                <img src="assets/EasterEgg1.png" class="ach-icon" alt="?">
+              </div>
+              <div class="ach-name">???</div>
+            </div>
+          `;
+        } else {
+          let eeIconHtml = isEasterEgg ? `<img src="assets/EasterEgg2.png" class="ee-small-icon" alt="EE">` : '';
+          cardHtml = `
+            <div class="ach-card" onclick="openAchModal(${g.base.id})">
+              <div class="ach-icon-wrapper">
+                <img src="${ICONS_DIR}${imgName}" class="ach-icon" alt="Icon">
+                ${eeIconHtml}
+              </div>
+              <div class="ach-name">${baseName}</div>
+            </div>
+          `;
+        }
+        elements.grid.innerHTML += cardHtml;
+      });
+    }
+
+    function getAwardImgHtml(awardId) {
+      if (!awardId) return '<div class="lvl-reward-wrapper"></div>';
+      
+      const idStr = awardId.toString();
+      const item = itemsMap.get(idStr);
+      let urls = [];
+      
+      if (updatedIconsSet.has(idStr)) urls.push(`'${ITEMS_BASE_URL}ff-icons/${idStr}_2.png'`);
+      urls.push(`'${ITEMS_BASE_URL}ff-icons/${idStr}.png'`);
+      
+      if (item && item.Icon) {
+        const iconStr = item.Icon.toString();
+        if (updatedIconsSet.has(iconStr)) urls.push(`'${ITEMS_BASE_URL}ff-icons/${iconStr}_2.png'`);
+        urls.push(`'${ITEMS_BASE_URL}ff-icons/${iconStr}.png'`);
+      }
+      urls.push(`'assets/UNKNOWN.png'`);
+      
+      const urlsArrayStr = `[${urls.join(',')}]`;
+      const errHandler = `let urls=${urlsArrayStr}; let idx = parseInt(this.dataset.idx || 0) + 1; if(idx < urls.length) { this.dataset.idx = idx; this.src = urls[idx]; } else { this.onerror=null; }`;
+      const initialUrl = urls[0].replace(/'/g, '');
+      const rareBgUrl = item ? getRarityBg(item.Rare) : getRarityBg('COMMON');
+      
+      return `
+        <div class="lvl-reward-wrapper">
+          <div class="has-award" style="background-image: url('${rareBgUrl}'); background-size: cover; background-position: center;" onclick="openItemModal('${idStr}'); event.stopPropagation();">
+            <img src="${initialUrl}" data-idx="0" onerror="${errHandler}" alt="Award">
+          </div>
+        </div>
+      `;
+    }
+
+    function openAchModal(id) {
+      const group = groupedAchievements.get(id);
+      if (!group) return;
+
+      const isEvent = group.base.achType === "Type_EVENT";
+      const isEasterEgg = group.base.achievementSubType === 29;
+      
+      const nameStr = parseHtmlColor(group.base.name);
+      elements.modalTitle.innerHTML = nameStr;
+      
+      elements.easterEggBadge.style.display = isEasterEgg ? 'inline-flex' : 'none';
+      elements.modalLevels.innerHTML = '';
+      
+      if (isEvent) {
+        elements.modalTitle.style.display = 'none';
+        const imgName = getFileName(group.base.iconCdn);
+        
+        let awardId = null;
+        if (group.base.bigEventAwardId) awardId = group.base.bigEventAwardId;
+        else if (group.base.awards && group.base.awards.length > 0) awardId = group.base.awards[0].awardId;
+        
+        if (!awardId && group.levels && group.levels.length > 0) {
+          for (let i = group.levels.length - 1; i >= 0; i--) {
+            if (group.levels[i].awards && group.levels[i].awards.length > 0) { awardId = group.levels[i].awards[0].awardId; break; }
+            if (group.levels[i].bigEventAwardId) { awardId = group.levels[i].bigEventAwardId; break; }
+          }
+        }
+
+        elements.modalLevels.innerHTML = `
+          <div class="event-modal-wrapper">
+            <img src="${ICONS_DIR}${imgName}" class="event-modal-banner" alt="Event">
+            <div class="event-modal-body">
+              <h2 class="modal-header-title" style="margin-bottom:0;">${nameStr}</h2>
+              <div class="event-modal-desc">${t.eventDesc}</div>
+              ${awardId ? getAwardImgHtml(awardId) : ''}
+            </div>
+          </div>
+        `;
+      } else {
+        elements.modalTitle.style.display = 'block';
+        let levelsToRender = group.levels.length > 0 ? group.levels : [group.base];
+        let html = '';
+        
+        levelsToRender.forEach((lvl, index) => {
+          const imgName = getFileName(lvl.iconCdn);
+          const pts = lvl.conditions?.achievementPoints;
+          const desc = parseHtmlColor(lvl.desc);
+          
+          let awardId = null;
+          if (lvl.awards && lvl.awards.length > 0) awardId = lvl.awards[0].awardId;
+          else if (lvl.bigEventAwardId) awardId = lvl.bigEventAwardId;
+
+          html += `
+            <div class="level-box">
+              <img src="${ICONS_DIR}${imgName}" class="lvl-icon" alt="Lvl">
+              <div class="lvl-desc">${desc}</div>
+              ${pts !== undefined && pts !== null ? `
+                <div class="lvl-pts-container">${svgCup} ${pts}</div>
+              ` : `<div class="lvl-pts-container" style="display:none;"></div>`}
+              <div class="lvl-divider"></div>
+              ${getAwardImgHtml(awardId)}
+            </div>
+          `;
+          if (index < levelsToRender.length - 1) {
+            html += `<div class="lvl-arrow">&raquo;</div>`;
+          }
+        });
+        elements.modalLevels.innerHTML = html;
+      }
+      
+      elements.achModal.style.display = 'flex';
+    }
+
+    function getRarityBg(rare) {
+      const mapped = rarityMap[rare] || rare;
+      if (mapped === "NONE" || mapped === "Card") return ITEMS_BASE_URL + "RareBG_Quality/COMMON.png";
+      const defaultBg = ITEMS_BASE_URL + "RareBG_Quality/UNKNOWN.png";
+      if (!mapped || !Object.values(rarityMap).includes(mapped)) return defaultBg;
+      return ITEMS_BASE_URL + `RareBG_Quality/${mapped}.png`;
+    }
+
+    function openItemModal(itemId) {
+      currentOpenItemId = itemId;
+      const item = itemsMap.get(itemId);
+      const modalIconEl = document.getElementById('modalItemIcon');
+
+      modalIconEl.style.transition = 'none';
+      modalIconEl.style.opacity = '0';
+      modalIconEl.className = 'modal-item-icon';
+      
+      modalIconEl.onload = function() {
+        if (this.src.includes('UNKNOWN.png')) this.classList.add('unknown-scale');
+        else if (this.naturalWidth === 300 && this.naturalHeight === 90) this.classList.add('weapon-tilt');
+        void this.offsetWidth;
+        if (!this.src.includes('UNKNOWN.png')) this.style.transition = 'transform 0.3s ease, opacity 0.2s ease';
+        this.style.opacity = '1';
+      };
+
+      const fallbackUrl = ITEMS_BASE_URL + 'RareBG_Quality/UNKNOWN.png';
+      const imageSources = [];
+      const idStr = itemId.toString();
+      
+      if (updatedIconsSet.has(idStr)) imageSources.push(ITEMS_BASE_URL + `ff-icons/${idStr}_2.png`);
+      imageSources.push(ITEMS_BASE_URL + `ff-icons/${idStr}.png`);
+      
+      if (item && item.Icon) {
+        const iconStr = item.Icon.toString();
+        if (updatedIconsSet.has(iconStr)) imageSources.push(ITEMS_BASE_URL + `ff-icons/${iconStr}_2.png`);
+        imageSources.push(ITEMS_BASE_URL + `ff-icons/${iconStr}.png`);
+      }
+      imageSources.push(fallbackUrl);
+
+      let currentSrcIndex = 0;
+      modalIconEl.onerror = function() {
+        currentSrcIndex++;
+        if (currentSrcIndex < imageSources.length) this.src = imageSources[currentSrcIndex];
+        else this.onerror = null;
+      };
+      
+      modalIconEl.src = imageSources[0];
+      
+      const nameStr = (item && item.Name && item.Name.trim() !== "") ? item.Name : t.unknownItem;
+      const modalItemNameEl = document.getElementById('modalItemName');
+      modalItemNameEl.textContent = nameStr;
+      let nameLen = nameStr.length;
+      if (nameLen < 25) modalItemNameEl.style.fontSize = '0.95rem';
+      else if (nameLen < 35) modalItemNameEl.style.fontSize = '0.85rem';
+      else if (nameLen < 45) modalItemNameEl.style.fontSize = '0.75rem';
+      else modalItemNameEl.style.fontSize = '0.65rem';
+      
+      const modalItemIdEl = document.getElementById('modalItemId');
+      modalItemIdEl.textContent = itemId;
+      let idLen = itemId.toString().length;
+      if (idLen < 15) modalItemIdEl.style.fontSize = '0.8rem';
+      else if (idLen < 25) modalItemIdEl.style.fontSize = '0.7rem';
+      else modalItemIdEl.style.fontSize = '0.6rem';
+      
+      const iconStr = (item && item.Icon) ? item.Icon.toString() : "N/A";
+      const modalIconIdEl = document.getElementById('modalItemIconId');
+      modalIconIdEl.textContent = iconStr;
+      let iconLen = iconStr.length;
+      if (iconLen < 20) modalIconIdEl.style.fontSize = '0.8rem';
+      else if (iconLen < 30) modalIconIdEl.style.fontSize = '0.7rem';
+      else if (iconLen < 40) modalIconIdEl.style.fontSize = '0.6rem';
+      else if (iconLen < 50) modalIconIdEl.style.fontSize = '0.5rem';
+      else modalIconIdEl.style.fontSize = '0.45rem';
+      
+      document.getElementById('modalItemDesc').textContent = (item && item.Desc && item.Desc.trim() !== "") ? item.Desc : t.noDesc;
+      
+      document.getElementById('btnCopyId').innerHTML = copyIconSVG;
+      elements.itemModal.style.display = 'flex';
+    }
+
+    function copyItemId() {
+      if (!currentOpenItemId) return;
+      navigator.clipboard.writeText(currentOpenItemId).then(() => {
+        const copyBtn = document.getElementById('btnCopyId');
+        copyBtn.innerHTML = checkIconSVG;
+        setTimeout(() => { copyBtn.innerHTML = copyIconSVG; }, 2000);
+      });
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+      if (modalId === 'itemModal') currentOpenItemId = null;
+    }
+
+    function calculateCategoryPoints(typesArray) {
+        let total = 0;
+        const arr = Array.from(groupedAchievements.values());
+        const filtered = arr.filter(g => typesArray.includes(g.base.achType));
+        filtered.forEach(g => {
+            g.levels.forEach(l => {
+                if(l.conditions && l.conditions.achievementPoints) total += l.conditions.achievementPoints;
+            });
+            if(g.base.achievementSubType === 29 && g.levels.length === 0) total += 100;
+        });
+        return total;
+    }
+
+    function openRewardsModal() {
+      let target = 'totalAchLevelConfig';
+      
+      if (currentTab === 'Type_BATTALE') target = 'battleAchLevelConfig';
+      else if (currentTab === 'Type_COLLECTION') target = 'collectionAchLevelConfig';
+      else if (currentTab === 'Type_CAREER') target = 'careerAchLevelConfig';
+      
+      switchRewardsTab(target);
+      elements.rewardsModal.style.display = 'flex';
+    }
+
+    function switchRewardsTab(targetConfig) {
+      document.querySelectorAll('.rew-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.rew-tab[data-target="${targetConfig}"]`).classList.add('active');
+      
+      let pts = 0;
+      let iconHtml = '';
+      if (targetConfig === 'totalAchLevelConfig') {
+          pts = calculateCategoryPoints(['Type_BATTALE', 'Type_COLLECTION', 'Type_CAREER']);
+          iconHtml = `<img src="assets/OVERALL-POINTS.png" alt="Icon">`;
+      } else if (targetConfig === 'battleAchLevelConfig') {
+          pts = calculateCategoryPoints(['Type_BATTALE']);
+          iconHtml = `<img src="assets/BATTLE.png" alt="Icon">`;
+      } else if (targetConfig === 'collectionAchLevelConfig') {
+          pts = calculateCategoryPoints(['Type_COLLECTION']);
+          iconHtml = `<img src="assets/COLLECTOR.png" alt="Icon">`;
+      } else if (targetConfig === 'careerAchLevelConfig') {
+          pts = calculateCategoryPoints(['Type_CAREER']);
+          iconHtml = `<img src="assets/CAREER.png" alt="Icon">`;
+      }
+
+      document.getElementById('rewCurrentPoints').innerHTML = `${svgCup} ${t.rewPointsDesc} ${pts}`;
+      
+      let html = '';
+      const configArr = fullData[targetConfig] || [];
+      configArr.forEach(tier => {
+          let awardsHtml = '';
+          if (tier.awards) {
+              tier.awards.forEach(aw => {
+                  awardsHtml += getAwardImgHtml(aw.awardId);
+              });
+          }
+          
+          html += `
+              <div class="rew-row">
+                  <div class="rew-req">
+                      ${iconHtml}
+                      <span>${tier.lowerBound} ${t.pts}</span>
+                  </div>
+                  <div class="rew-awards">
+                      ${awardsHtml}
+                  </div>
+              </div>
+          `;
+      });
+      document.getElementById('rewardsList').innerHTML = html;
+    }
+
+    window.onclick = function(e) {
+      if (e.target === elements.itemModal) closeModal('itemModal');
+      else if (e.target === elements.achModal) closeModal('achModal');
+      else if (e.target === elements.rewardsModal) closeModal('rewardsModal');
+    }
+
+    init();
+  </script>
+</body>
+</html>
