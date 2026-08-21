@@ -674,6 +674,21 @@
       }
 
       filtered.sort((a, b) => {
+        if (currentTab === "Type_EVENT") {
+          let evTimeA = a.base.eventStartTime || "";
+          let evTimeB = b.base.eventStartTime || "";
+          
+          if (evTimeA !== evTimeB) {
+              return evTimeB.localeCompare(evTimeA);
+          }
+          
+          let timeA = parseInt(a.base.startTime || "0");
+          let timeB = parseInt(b.base.startTime || "0");
+          if (timeA !== timeB) {
+              return timeB - timeA;
+          }
+        }
+
         if (a.base.sort !== b.base.sort) return (a.base.sort || 999) - (b.base.sort || 999);
         return (a.base.name || "").localeCompare(b.base.name || "", 'en');
       });
