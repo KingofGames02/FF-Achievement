@@ -928,7 +928,7 @@
           cardHtml = `
             <div class="ach-card event-card" onclick="openAchModal(${g.base.id})">
               <div class="is-loading" style="width:100%; height:130px; border-bottom: 1px solid var(--border);">
-                <img src="${ICONS_DIR}${imgName}" class="event-banner" alt="Event" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0; border-bottom:none;">
+                <img src="${ICONS_DIR}${imgName}" class="event-banner" alt="Event" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0; border-bottom:none; transition: opacity 0.3s ease;">
               </div>
               <div class="event-info">
                 <div class="ach-name">${baseName}</div>
@@ -940,7 +940,7 @@
           cardHtml = `
             <div class="ach-card easter-egg" onclick="openAchModal(${g.base.id})">
               <div class="ach-icon-wrapper is-loading">
-                <img src="assets/EasterEgg1.png" class="ach-icon" alt="?" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0;">
+                <img src="assets/EasterEgg1.png" class="ach-icon" alt="?" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0; transition: opacity 0.3s ease;">
               </div>
               <div class="ach-name">???</div>
             </div>
@@ -950,7 +950,7 @@
           cardHtml = `
             <div class="ach-card" onclick="openAchModal(${g.base.id})">
               <div class="ach-icon-wrapper is-loading">
-                <img src="${ICONS_DIR}${imgName}" class="ach-icon" alt="Icon" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0;">
+                <img src="${ICONS_DIR}${imgName}" class="ach-icon" alt="Icon" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0; transition: opacity 0.3s ease;">
                 ${eeIconHtml}
               </div>
               <div class="ach-name">${baseName}</div>
@@ -969,7 +969,7 @@
       const urls = getIconUrlsArrayObj(idStr, false, null);
       
       const urlsArrayStr = `[${urls.map(u => `'${u}'`).join(',')}]`;
-      const errHandler = `let urls=${urlsArrayStr}; let idx = parseInt(this.dataset.idx || 0) + 1; if(idx < urls.length) { this.dataset.idx = idx; this.src = urls[idx]; } else { this.onerror=null; }`;
+      const errHandler = `let urls=${urlsArrayStr}; let idx = parseInt(this.dataset.idx || 0) + 1; if(idx < urls.length) { this.dataset.idx = idx; this.src = urls[idx]; } else { this.onerror=null; this.parentElement.classList.remove('is-loading'); this.style.opacity='1'; }`;
       const initialUrl = urls[0];
       const rareBgUrl = item ? getRarityBg(item.Rare) : getRarityBg('COMMON');
       
@@ -1013,7 +1013,7 @@
         elements.modalLevels.innerHTML = `
           <div class="event-modal-wrapper">
             <div class="is-loading" style="width:100%; height:auto; border-radius: var(--radius) var(--radius) 0 0;">
-              <img src="${ICONS_DIR}${imgName}" class="event-modal-banner" alt="Event" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0;">
+              <img src="${ICONS_DIR}${imgName}" class="event-modal-banner" alt="Event" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0; border-bottom:none; transition: opacity 0.3s ease;">
             </div>
             <div class="event-modal-body">
               <h2 class="modal-header-title" style="margin-bottom:0;">${nameStr}</h2>
@@ -1039,7 +1039,7 @@
           html += `
             <div class="level-box">
               <div class="lvl-icon-wrapper is-loading">
-                <img src="${ICONS_DIR}${imgName}" class="lvl-icon" alt="Lvl" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0;">
+                <img src="${ICONS_DIR}${imgName}" class="lvl-icon" alt="Lvl" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0; transition: opacity 0.3s ease;">
               </div>
               <div class="lvl-desc">${desc}</div>
               ${pts !== undefined && pts !== null ? `
@@ -1071,12 +1071,15 @@
       currentOpenItemId = itemId;
       const item = itemsMap.get(itemId);
       const modalIconEl = document.getElementById('modalItemIcon');
+      const itemRarityBg = document.getElementById('itemRarityBg');
 
+      itemRarityBg.classList.add('is-loading');
       modalIconEl.style.transition = 'none';
       modalIconEl.style.opacity = '0';
       modalIconEl.className = 'modal-item-icon';
       
       modalIconEl.onload = function() {
+        itemRarityBg.classList.remove('is-loading');
         if (this.src.includes('UNKNOWN.png')) this.classList.add('unknown-scale');
         else if (this.naturalWidth === 300 && this.naturalHeight === 90) this.classList.add('weapon-tilt');
         void this.offsetWidth;
@@ -1093,8 +1096,13 @@
       let currentIdx = 0;
       modalIconEl.onerror = function() {
         currentIdx++;
-        if (currentIdx < urls.length) this.src = urls[currentIdx];
-        else this.onerror = null;
+        if (currentIdx < urls.length) {
+            this.src = urls[currentIdx];
+        } else {
+            this.onerror = null;
+            itemRarityBg.classList.remove('is-loading');
+            this.style.opacity = '1';
+        }
       };
       
       modalIconEl.src = urls[0];
