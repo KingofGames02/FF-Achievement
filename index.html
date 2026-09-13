@@ -89,6 +89,14 @@
 
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
+    .is-loading { position: relative; overflow: hidden; border-radius: inherit; }
+    .is-loading::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.15) 50%, transparent 80%);
+      background-size: 200% 100%; animation: shimmer 1.5s infinite linear; z-index: 5;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
     .top-nav {
       position: sticky; top: 0; z-index: 50; width: 100%; display: flex; background: rgba(7, 25, 50, 0.95);
       border-bottom: 1px solid var(--border); padding: 0 10px; overflow-x: auto; backdrop-filter: blur(10px);
@@ -180,8 +188,8 @@
     }
     .ach-card:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--accent-gold); transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5); }
 
-    .ach-icon-wrapper { width: 70px; height: 70px; margin-bottom: 12px; display: flex; justify-content: center; align-items: center; position: relative; }
-    .ach-icon { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
+    .ach-icon-wrapper { width: 70px; height: 70px; margin-bottom: 12px; display: flex; justify-content: center; align-items: center; position: relative; border-radius: 50%; }
+    .ach-icon { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); transition: opacity 0.3s ease; }
 
     .ee-small-icon { position: absolute; bottom: -5px; inset-inline-end: -10px; width: 25px; height: 25px; filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.8)); }
 
@@ -194,7 +202,7 @@
     .event-grid-override { grid-template-columns: 1fr; }
     
     .event-card { padding: 0; justify-content: flex-start; overflow: hidden; height: 200px; }
-    .event-banner { width: 100%; height: 130px; object-fit: cover; border-bottom: 1px solid var(--border); }
+    .event-banner { width: 100%; height: 130px; object-fit: cover; border-bottom: 1px solid var(--border); transition: opacity 0.3s ease; }
     .event-info { padding: 12px; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px; }
 
     .modal {
@@ -229,7 +237,8 @@
       width: 100%; display: flex; flex-direction: column; align-items: center; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.4)); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px 10px; position: relative;
     }
 
-    .lvl-icon { width: 90px; height: 90px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); }
+    .lvl-icon { width: 90px; height: 90px; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); transition: opacity 0.3s ease; margin: 0; }
+    .lvl-icon-wrapper { width: 90px; height: 90px; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; position: relative; border-radius: 12px; }
     .lvl-desc { text-align: center; font-size: 0.85rem; line-height: 1.5; color: var(--text); margin-bottom: 15px; width: 100%; word-wrap: break-word; }
 
     .lvl-pts-container { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1.1rem; font-weight: bold; color: #fff; height: 30px; margin-bottom: 15px; }
@@ -239,14 +248,14 @@
 
     .lvl-reward-wrapper { height: 60px; display: flex; align-items: center; justify-content: center; width: 100%; }
 
-    .has-award { width: 55px; height: 55px; border-radius: 8px; border: 1px solid var(--border); padding: 5px; cursor: pointer; transition: all 0.2s; position: relative; z-index: 10; }
+    .has-award { width: 55px; height: 55px; border-radius: 8px; border: 1px solid var(--border); padding: 5px; cursor: pointer; transition: all 0.2s; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; }
     .has-award:hover { border-color: var(--accent); transform: scale(1.05); box-shadow: 0 0 10px rgba(74, 120, 194, 0.5); }
-    .has-award img { width: 100%; height: 100%; object-fit: contain; }
+    .has-award img { width: 100%; height: 100%; object-fit: contain; transition: opacity 0.3s ease; }
 
     .lvl-arrow { color: #8b5cf6; font-size: 2rem; font-weight: 900; opacity: 0.5; display: flex; align-items: center; transform: rotate(90deg); justify-content: center; margin: 5px 0; }
 
     .event-modal-wrapper { display: flex; flex-direction: column; align-items: center; background: rgba(7, 25, 50, 0.9); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; width: 100%; max-width: 100%; margin: 0 auto; }
-    .event-modal-banner { width: 100%; height: auto; max-height: 180px; object-fit: cover; border-bottom: 1px solid var(--border); }
+    .event-modal-banner { width: 100%; height: auto; max-height: 180px; object-fit: cover; transition: opacity 0.3s ease; border-bottom: none; }
     .event-modal-body { padding: 20px 15px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
     .event-modal-desc { font-size: 0.85rem; color: var(--text); }
 
@@ -254,7 +263,7 @@
     .modal-float-wrapper { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; animation: floatWrapper 3s ease-in-out infinite; }
     @keyframes floatWrapper { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
 
-    .modal-item-icon { max-width: 150px; max-height: 150px; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.7)); transition: transform 0.3s ease, opacity 0.2s ease; }
+    .modal-item-icon { max-width: 150px; max-height: 150px; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.7)); transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; }
     .modal-item-icon.weapon-tilt { transform: rotate(25deg) scale(1.4); }
     .modal-item-icon.unknown-scale { transform: scale(0.3); }
 
@@ -412,7 +421,7 @@
   </div>
 
   <script>
-    const APP_VERSION = "1.0.0";
+    const APP_VERSION = "2.0.0";
     const ICONS_DIR = "ff-achievement/";
     const ITEMS_BASE_URL = "https://kingofgames02.github.io/Free-Fire-Items-Library/";
 
@@ -612,6 +621,18 @@
       return url.split('/').pop().replace('.ff_extend', '.jpg');
     }
 
+    function formatAchievementDesc(text, conditions) {
+        if (!text || typeof text !== 'string') return text;
+        let c_val = null;
+        if (conditions) {
+            if (conditions['2'] !== undefined) c_val = conditions['2'];
+            else if (conditions.cdtValue !== undefined) c_val = conditions.cdtValue;
+        }
+        if (c_val !== null) text = text.replace(/\{1\}/g, String(c_val));
+        text = text.replace(/\{0\}/g, '0');
+        return text;
+    }
+
     function resolveText(key, lang) {
       if (!key) return "";
       if (hfMap[key]) return hfMap[key][lang] || hfMap[key]['en'] || key;
@@ -728,7 +749,7 @@
       const entries = fullData.achEntriesDesc || [];
       entries.forEach(item => {
         item.nameResolved = resolveText(item.name, currentDataLang);
-        item.descResolved = resolveText(item.desc, currentDataLang);
+        item.descResolved = formatAchievementDesc(resolveText(item.desc, currentDataLang), item.conditions);
 
         if (!groupedAchievements.has(item.id)) {
           groupedAchievements.set(item.id, { base: null, levels: [] });
@@ -906,7 +927,9 @@
         if (isEvent) {
           cardHtml = `
             <div class="ach-card event-card" onclick="openAchModal(${g.base.id})">
-              <img src="${ICONS_DIR}${imgName}" class="event-banner" alt="Event">
+              <div class="is-loading" style="width:100%; height:130px; border-bottom: 1px solid var(--border);">
+                <img src="${ICONS_DIR}${imgName}" class="event-banner" alt="Event" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0; border-bottom:none;">
+              </div>
               <div class="event-info">
                 <div class="ach-name">${baseName}</div>
                 ${g.base.eventStartTime ? `<div class="ach-status">${g.base.eventStartTime}</div>` : ''}
@@ -916,8 +939,8 @@
         } else if (isObfuscated) {
           cardHtml = `
             <div class="ach-card easter-egg" onclick="openAchModal(${g.base.id})">
-              <div class="ach-icon-wrapper">
-                <img src="assets/EasterEgg1.png" class="ach-icon" alt="?">
+              <div class="ach-icon-wrapper is-loading">
+                <img src="assets/EasterEgg1.png" class="ach-icon" alt="?" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0;">
               </div>
               <div class="ach-name">???</div>
             </div>
@@ -926,8 +949,8 @@
           let eeIconHtml = isEasterEgg ? `<img src="assets/EasterEgg2.png" class="ee-small-icon" alt="EE">` : '';
           cardHtml = `
             <div class="ach-card" onclick="openAchModal(${g.base.id})">
-              <div class="ach-icon-wrapper">
-                <img src="${ICONS_DIR}${imgName}" class="ach-icon" alt="Icon">
+              <div class="ach-icon-wrapper is-loading">
+                <img src="${ICONS_DIR}${imgName}" class="ach-icon" alt="Icon" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0;">
                 ${eeIconHtml}
               </div>
               <div class="ach-name">${baseName}</div>
@@ -952,8 +975,8 @@
       
       return `
         <div class="lvl-reward-wrapper">
-          <div class="has-award" style="background-image: url('${rareBgUrl}'); background-size: cover; background-position: center;" onclick="openItemModal('${idStr}'); event.stopPropagation();">
-            <img src="${initialUrl}" data-idx="0" onerror="${errHandler}" alt="Award">
+          <div class="has-award is-loading" style="background-image: url('${rareBgUrl}'); background-size: cover; background-position: center;" onclick="openItemModal('${idStr}'); event.stopPropagation();">
+            <img src="${initialUrl}" data-idx="0" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" onerror="${errHandler}" alt="Award" style="opacity:0; transition: opacity 0.3s ease;">
           </div>
         </div>
       `;
@@ -989,7 +1012,9 @@
 
         elements.modalLevels.innerHTML = `
           <div class="event-modal-wrapper">
-            <img src="${ICONS_DIR}${imgName}" class="event-modal-banner" alt="Event">
+            <div class="is-loading" style="width:100%; height:auto; border-radius: var(--radius) var(--radius) 0 0;">
+              <img src="${ICONS_DIR}${imgName}" class="event-modal-banner" alt="Event" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0;">
+            </div>
             <div class="event-modal-body">
               <h2 class="modal-header-title" style="margin-bottom:0;">${nameStr}</h2>
               <div class="event-modal-desc">${tr[currentUILang].eventDesc}</div>
@@ -1013,7 +1038,9 @@
 
           html += `
             <div class="level-box">
-              <img src="${ICONS_DIR}${imgName}" class="lvl-icon" alt="Lvl">
+              <div class="lvl-icon-wrapper is-loading">
+                <img src="${ICONS_DIR}${imgName}" class="lvl-icon" alt="Lvl" onload="this.parentElement.classList.remove('is-loading'); this.style.opacity='1';" style="opacity:0;">
+              </div>
               <div class="lvl-desc">${desc}</div>
               ${pts !== undefined && pts !== null ? `
                 <div class="lvl-pts-container">${svgCup} ${pts}</div>
