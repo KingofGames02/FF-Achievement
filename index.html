@@ -146,15 +146,24 @@
 
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-    .capsule-footer { display: flex; justify-content: center; align-items: center; width: 100%; position: relative; margin-top: auto; padding-top: 10px; }
-
-    .lang-btn {
-      position: absolute; inset-inline-start: 0; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
-    }
-    .lang-btn:hover { background: rgba(255,255,255,0.2); border-color: #fff; }
+    .capsule-footer { display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; position: relative; margin-top: auto; padding-top: 15px; gap: 10px; }
 
     .sub-title { font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 700; color: #FFD700; letter-spacing: 1px; animation: glowEffect 1.5s ease-in-out infinite alternate; text-align: center; width: 100%; }
     body[dir="rtl"] .sub-title { letter-spacing: 0; }
+
+    .lang-selector-wrapper { width: 100%; max-width: 250px; position: relative; }
+    .lang-selector-wrapper select {
+      width: 100%; padding: 10px 16px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15);
+      background-color: rgba(0,0,0,0.3); color: var(--accent-gold); font-family: inherit; font-size: 0.9rem; font-weight: bold;
+      cursor: pointer; outline: none; appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffba00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 15px center;
+      transition: all 0.3s; text-align: center; text-align-last: center;
+    }
+    html[dir="rtl"] .lang-selector-wrapper select { background-position: left 15px center; }
+    .lang-selector-wrapper select:hover, .lang-selector-wrapper select:focus { border-color: var(--accent-gold); background-color: rgba(255, 186, 0, 0.1); }
+    .lang-selector-wrapper option { background-color: rgba(7, 25, 50, 0.95); color: #fff; text-align: left; }
+    html[dir="rtl"] .lang-selector-wrapper option { text-align: right; }
 
     @keyframes glowEffect { from { text-shadow: 0 0 5px rgba(255, 215, 0, 0.2); } to { text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.6); } }
 
@@ -332,10 +341,10 @@
       </div>
       
       <div class="capsule-footer">
-        <button class="lang-btn" onclick="toggleLanguage()" title="Change Language">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M2 12H22"></path><path d="M12 2C14.5013 4.73835 15.9228 8.29203 16 12C15.9228 15.708 14.5013 19.2616 12 22C9.49872 19.2616 8.07725 15.708 8 12C8.07725 8.29203 9.49872 4.73835 12 2Z"></path></svg>
-        </button>
         <div class="sub-title" id="txtSubTitle">Made By King of Games</div>
+        <div class="lang-selector-wrapper">
+          <select id="dashLangSelect" onchange="changeDashLang()"></select>
+        </div>
       </div>
     </div>
 
@@ -403,6 +412,29 @@
   </div>
 
   <script>
+    const APP_VERSION = "1.0.0";
+    const ICONS_DIR = "ff-achievement/";
+    const ITEMS_BASE_URL = "https://kingofgames02.github.io/Free-Fire-Items-Library/";
+
+    const langConfig = {
+      'en': { name: 'English', file: 'loc_en.txt' },
+      'ar': { name: 'Arabic', file: 'loc_ar.txt' },
+      'es': { name: 'Spanish', file: 'loc_es.txt' },
+      'es-na': { name: 'Spanish (NA)', file: 'loc_es-na.txt' },
+      'pt-br': { name: 'Brazilian Portuguese', file: 'loc_pt-br.txt' },
+      'fr': { name: 'French', file: 'loc_fr.txt' },
+      'ind': { name: 'Indonesia', file: 'loc_ind.txt' },
+      'vn': { name: 'Vietnamese', file: 'loc_vn.txt' },
+      'th': { name: 'Thai', file: 'loc_th.txt' },
+      'ms': { name: 'Malay', file: 'loc_ms.txt' },
+      'tr': { name: 'Turkish', file: 'loc_tr.txt' },
+      'ru': { name: 'Russian', file: 'loc_ru.txt' },
+      'zh-tw': { name: 'Traditional Chinese', file: 'loc_zh-tw.txt' },
+      'hi': { name: 'Hindi', file: 'loc_hi.txt' },
+      'bn': { name: 'Bengali', file: 'loc_bn.txt' },
+      'en-in': { name: 'English (IN)', file: 'loc_en-in.txt' }
+    };
+
     const tr = {
       en: {
         tabs: { ALL: "ALL", Type_BATTALE: "BATTLE", Type_COLLECTION: "COLLECTOR", Type_CAREER: "CAREER", Type_YEAR: "SEASON-EXCLUSIVE", EASTER_EGG: "EASTER EGG", Type_EVENT: "EVENT" },
@@ -440,27 +472,19 @@
       }
     };
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentLang = urlParams.get('lang') === 'ar' ? 'ar' : 'en';
-    const isAr = currentLang === 'ar';
-    const t = tr[currentLang];
-    
-    document.body.setAttribute('dir', isAr ? 'rtl' : 'ltr');
-
-    const DATA_URL = isAr ? "GetAllAchievementDesc_ar.json" : "GetAllAchievementDesc.json";
-    const ICONS_DIR = "ff-achievement/";
-    const ITEMS_BASE_URL = "https://kingofgames02.github.io/Free-Fire-Items-Library/";
-    const ITEMS_DATA_URL = ITEMS_BASE_URL + (isAr ? "ItemsData_ar.json" : "ItemsData_en.json");
-    const UPDATED_ICONS_URL = ITEMS_BASE_URL + "updated_icons.json";
-    
     let fullData = null;
     let groupedAchievements = new Map();
     let currentTab = "ALL";
     let currentFilter = "ALL";
     
     let itemsMap = new Map();
-    let updatedIconsSet = new Set();
+    let cdnMapData = [];
+    let collectionBanners = [];
     let currentOpenItemId = null;
+    let locMapLive = {}, locMapAdv = {}, linesLive = [], linesAdv = [], hfMap = {};
+
+    let currentDataLang = 'en';
+    let currentUILang = 'en';
 
     const rarityMap = {
       "White": "COMMON", "Green": "UNCOMMON", "Blue": "RARE",
@@ -490,31 +514,90 @@
       easterEggBadge: document.getElementById('easterEggBadge'),
       itemModal: document.getElementById('itemModal'),
       rewardsModal: document.getElementById('rewardsModal'),
-      btnGift: document.getElementById('btnGift')
+      btnGift: document.getElementById('btnGift'),
+      langSelect: document.getElementById('dashLangSelect')
     };
 
-    function toggleLanguage() {
-        const url = new URL(window.location);
-        url.searchParams.set('lang', isAr ? 'en' : 'ar');
-        window.location.href = url.toString();
+    function detectLanguage() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const langParam = urlParams.get('lang');
+      
+      if (langParam && langConfig[langParam]) {
+          currentDataLang = langParam;
+      } else {
+          const browserLang = (navigator.language || navigator.userLanguage).toLowerCase();
+          if (browserLang.includes('ar')) {
+              currentDataLang = 'ar';
+          } else {
+              const mapped = Object.keys(langConfig).find(k => browserLang.startsWith(k));
+              if (mapped) currentDataLang = mapped;
+              else currentDataLang = 'en';
+          }
+      }
+      currentUILang = currentDataLang === 'ar' ? 'ar' : 'en';
+      document.body.setAttribute('dir', currentUILang === 'en' ? 'ltr' : 'rtl');
+      populateLangSelect();
+    }
+
+    function populateLangSelect() {
+      elements.langSelect.innerHTML = '';
+      Object.keys(langConfig).forEach(key => {
+          elements.langSelect.innerHTML += `<option value="${key}">${langConfig[key].name}</option>`;
+      });
+      elements.langSelect.value = currentDataLang;
+    }
+
+    async function changeDashLang() {
+      elements.loader.style.opacity = '1';
+      elements.loader.style.display = 'flex';
+      
+      currentDataLang = elements.langSelect.value;
+      currentUILang = currentDataLang === 'ar' ? 'ar' : 'en';
+      document.body.setAttribute('dir', currentUILang === 'en' ? 'ltr' : 'rtl');
+
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('lang', currentDataLang);
+      window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+
+      applyTranslations();
+
+      try {
+          const locFile = langConfig[currentDataLang] ? langConfig[currentDataLang].file : 'loc_en.txt';
+          const res = await fetch(`${ITEMS_BASE_URL}Data/live/${locFile}?v=${APP_VERSION}`);
+          if(res.ok) {
+              linesLive = (await res.text()).split(/\r?\n/);
+              
+              itemsMap.forEach(item => {
+                  item.NameText = resolveText(item.Name, currentDataLang);
+                  item.DescText = resolveText(item.Desc, currentDataLang);
+              });
+              
+              processData();
+              renderTab(currentTab);
+          }
+      } catch(e) {}
+
+      elements.loader.style.opacity = '0';
+      setTimeout(() => elements.loader.style.display = 'none', 400);
     }
 
     function applyTranslations() {
+        const trData = tr[currentUILang];
         document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.textContent = t.tabs[tab.dataset.tab];
+            tab.textContent = trData.tabs[tab.dataset.tab];
         });
-        document.getElementById('pointsSubtext').textContent = t.pointsSub;
-        document.getElementById('txtSubTitle').textContent = t.madeBy;
-        document.getElementById('lblEeBadge').textContent = t.eeBadge;
-        document.getElementById('lblItemId').textContent = t.itemId;
-        document.getElementById('lblIconId').textContent = t.iconId;
-        document.getElementById('lblDesc').textContent = t.desc;
-        document.getElementById('rewHeaderTitle').textContent = t.rewardsTitle;
-        document.getElementById('rewAttainDesc').textContent = t.rewAttainDesc;
-        document.getElementById('tabRewAll').textContent = t.tabs.ALL;
-        document.getElementById('tabRewBattle').textContent = t.tabs.Type_BATTALE;
-        document.getElementById('tabRewCollector').textContent = t.tabs.Type_COLLECTION;
-        document.getElementById('tabRewCareer').textContent = t.tabs.Type_CAREER;
+        document.getElementById('pointsSubtext').textContent = trData.pointsSub;
+        document.getElementById('txtSubTitle').textContent = trData.madeBy;
+        document.getElementById('lblEeBadge').textContent = trData.eeBadge;
+        document.getElementById('lblItemId').textContent = trData.itemId;
+        document.getElementById('lblIconId').textContent = trData.iconId;
+        document.getElementById('lblDesc').textContent = trData.desc;
+        document.getElementById('rewHeaderTitle').textContent = trData.rewardsTitle;
+        document.getElementById('rewAttainDesc').textContent = trData.rewAttainDesc;
+        document.getElementById('tabRewAll').textContent = trData.tabs.ALL;
+        document.getElementById('tabRewBattle').textContent = trData.tabs.Type_BATTALE;
+        document.getElementById('tabRewCollector').textContent = trData.tabs.Type_COLLECTION;
+        document.getElementById('tabRewCareer').textContent = trData.tabs.Type_CAREER;
     }
 
     function parseHtmlColor(text) {
@@ -529,35 +612,110 @@
       return url.split('/').pop().replace('.ff_extend', '.jpg');
     }
 
+    function resolveText(key, lang) {
+      if (!key) return "";
+      if (hfMap[key]) return hfMap[key][lang] || hfMap[key]['en'] || key;
+      if (locMapLive[key] !== undefined) {
+          let text = linesLive[locMapLive[key] - 1];
+          return text !== undefined ? text.trim() : key;
+      }
+      if (locMapAdv[key] !== undefined) {
+          let text = linesAdv[locMapAdv[key] - 1];
+          return text !== undefined ? text.trim() : key;
+      }
+      return key;
+    }
+
+    function getIconUrlsArrayObj(id, isBanner, bannerIconStr) {
+      const item = itemsMap.get(id) || {};
+      let urls = [];
+      let itemID = String(id);
+      let iconName = item.Icon ? String(item.Icon) : null;
+      
+      let cdnMatch = null;
+      if (isBanner && bannerIconStr) {
+          cdnMatch = cdnMapData.find(e => String(e.IconName).toLowerCase() === bannerIconStr.toLowerCase());
+      } else {
+          cdnMatch = cdnMapData.find(e => String(e.IconName) === itemID || (iconName && String(e.IconName) === iconName));
+      }
+
+      if (cdnMatch && cdnMatch.CDNUrl) {
+          let cdnUrl = String(cdnMatch.CDNUrl);
+          urls.push(`${ITEMS_BASE_URL}ff-icons/${cdnUrl}.png`);
+          if (/[a-zA-Z]/.test(cdnUrl)) urls.push(`${ITEMS_BASE_URL}ff-icons/${cdnUrl.toLowerCase()}.png`);
+      }
+
+      if (isBanner && bannerIconStr) {
+          urls.push(`${ITEMS_BASE_URL}ff-icons/${bannerIconStr}.png`);
+      } else {
+          urls.push(`${ITEMS_BASE_URL}ff-icons/${itemID}_2.png`);
+          urls.push(`${ITEMS_BASE_URL}ff-icons/${itemID}.png`);
+          if (iconName) {
+              urls.push(`${ITEMS_BASE_URL}ff-icons/${iconName}_2.png`);
+              urls.push(`${ITEMS_BASE_URL}ff-icons/${iconName}.png`);
+          }
+      }
+      urls.push(`${ITEMS_BASE_URL}RareBG_Quality/UNKNOWN.png`);
+      return urls;
+    }
+
     async function init() {
+      detectLanguage();
       applyTranslations();
       try {
-        const [achRes, itemsRes, upRes] = await Promise.all([
-          fetch(DATA_URL).catch(() => null),
-          fetch(ITEMS_DATA_URL).catch(() => null),
-          fetch(UPDATED_ICONS_URL).catch(() => null)
-        ]);
+        const locFile = langConfig[currentDataLang] ? langConfig[currentDataLang].file : 'loc_en.txt';
+        const fetches = [
+            fetch(`GetAllAchievementDesc.json?v=${APP_VERSION}`).then(r=>r.ok?r.json():null),
+            fetch(`${ITEMS_BASE_URL}Data/advance/FFAdv_ItemsData.json?v=${APP_VERSION}`).then(r=>r.ok?r.json():[]),
+            fetch(`${ITEMS_BASE_URL}Data/live/FF_ItemsData.json?v=${APP_VERSION}`).then(r=>r.ok?r.json():[]),
+            fetch(`${ITEMS_BASE_URL}Data/advance/CollectionBanner.json?v=${APP_VERSION}`).then(r=>r.ok?r.json():[]),
+            fetch(`${ITEMS_BASE_URL}Data/live/CollectionBanner.json?v=${APP_VERSION}`).then(r=>r.ok?r.json():[]),
+            fetch(`${ITEMS_BASE_URL}Data/live/IconCDNMap.json?v=${APP_VERSION}`).then(r=>r.ok?r.json():[]),
+            fetch(`${ITEMS_BASE_URL}Data/advance/FFAdv_LocId.json?v=${APP_VERSION}`).then(r=>r.ok?r.json():[]),
+            fetch(`${ITEMS_BASE_URL}Data/live/FF_LocId.json?v=${APP_VERSION}`).then(r=>r.ok?r.json():[]),
+            fetch(`${ITEMS_BASE_URL}Data/advance/loc_en.txt?v=${APP_VERSION}`).then(r=>r.ok?r.text():""),
+            fetch(`${ITEMS_BASE_URL}Data/live/${locFile}?v=${APP_VERSION}`).then(r=>r.ok?r.text():""),
+            fetch(`${ITEMS_BASE_URL}Data/live/LocHotFix.json?v=${APP_VERSION}`).then(r=>r.ok?r.json():[])
+        ];
         
-        if (achRes && achRes.ok) fullData = await achRes.json();
-        
-        if (itemsRes && itemsRes.ok) {
-          const itemsRaw = await itemsRes.json();
-          const itemsArray = Array.isArray(itemsRaw) ? itemsRaw : Object.values(itemsRaw);
-          itemsArray.forEach(item => {
-            if (item.Id) itemsMap.set(item.Id.toString(), item);
-          });
+        const [
+            achData, advItems, liveItems, advBanners, liveBanners, cdnMap,
+            advLocId, liveLocId, advLocTxt, liveLocTxt, hotFixes
+        ] = await Promise.all(fetches);
+
+        if (achData) fullData = achData;
+
+        const tempItemsMap = new Map();
+        (Array.isArray(advItems) ? advItems : Object.values(advItems)).forEach(i => tempItemsMap.set(i.Id.toString(), i));
+        (Array.isArray(liveItems) ? liveItems : Object.values(liveItems)).forEach(i => tempItemsMap.set(i.Id.toString(), i));
+        itemsMap = tempItemsMap;
+
+        const bannersMap = {};
+        (Array.isArray(advBanners) ? advBanners : Object.values(advBanners)).forEach(b => bannersMap[b.itemID] = b);
+        (Array.isArray(liveBanners) ? liveBanners : Object.values(liveBanners)).forEach(b => bannersMap[b.itemID] = b);
+        collectionBanners = Object.values(bannersMap);
+
+        cdnMapData = Array.isArray(cdnMap) ? cdnMap : Object.values(cdnMap);
+
+        linesAdv = advLocTxt.split(/\r?\n/);
+        linesLive = liveLocTxt.split(/\r?\n/);
+
+        (Array.isArray(advLocId) ? advLocId : Object.values(advLocId)).forEach(i => { if(i.Id && i.Row) locMapAdv[i.Id] = i.Row; });
+        (Array.isArray(liveLocId) ? liveLocId : Object.values(liveLocId)).forEach(i => { if(i.Id && i.Row) locMapLive[i.Id] = i.Row; });
+
+        if(hotFixes) {
+            (Array.isArray(hotFixes) ? hotFixes : Object.values(hotFixes)).forEach(i => { if(i.new) hfMap[i.id] = i; });
         }
-        
-        if (upRes && upRes.ok) {
-          const upArr = await upRes.json();
-          updatedIconsSet = new Set(upArr);
-        }
+
+        itemsMap.forEach(item => {
+            item.NameText = resolveText(item.Name, currentDataLang);
+            item.DescText = resolveText(item.Desc, currentDataLang);
+        });
 
         processData();
         setupTabs();
         renderTab("ALL");
       } catch (e) {
-        console.error(e);
       } finally {
         elements.loader.style.opacity = '0';
         setTimeout(() => elements.loader.style.display = 'none', 400);
@@ -565,9 +723,13 @@
     }
 
     function processData() {
+      groupedAchievements.clear();
       if (!fullData) return;
       const entries = fullData.achEntriesDesc || [];
       entries.forEach(item => {
+        item.nameResolved = resolveText(item.name, currentDataLang);
+        item.descResolved = resolveText(item.desc, currentDataLang);
+
         if (!groupedAchievements.has(item.id)) {
           groupedAchievements.set(item.id, { base: null, levels: [] });
         }
@@ -605,7 +767,8 @@
       
       let filtered = [];
       let totalPts = 0;
-      let title = "- " + t.tabs.ALL + " -";
+      const trData = tr[currentUILang];
+      let title = "- " + trData.tabs.ALL + " -";
       let icon = "assets/OVERALL-POINTS.png";
       elements.imgCapsule.classList.remove('ee-small-scale');
 
@@ -622,7 +785,7 @@
       elements.leftCapsule.style.display = (tabId === "Type_EVENT") ? "none" : "flex";
 
       if (tabId === "Type_YEAR") {
-        title = "- " + t.tabs.Type_YEAR + " -";
+        title = "- " + trData.tabs.Type_YEAR + " -";
         icon = "assets/SEASON-EXCLUSIVE.png";
         elements.pointsDisplay.style.display = "none";
         elements.pointsSubtext.style.display = "none";
@@ -642,7 +805,7 @@
           filtered = filtered.filter(g => g.base.achievementSubType.toString() === currentFilter);
         }
       } else if (tabId === "EASTER_EGG") {
-        title = "- " + t.tabs.EASTER_EGG + " -";
+        title = "- " + trData.tabs.EASTER_EGG + " -";
         icon = "assets/EasterEgg1.png";
         elements.imgCapsule.classList.add('ee-small-scale');
         elements.pointsDisplay.style.display = "flex";
@@ -653,13 +816,13 @@
         elements.pointsSubtext.style.display = "block";
         elements.btnGift.style.display = "flex";
         if (tabId === "Type_BATTALE") {
-          title = "- " + t.tabs.Type_BATTALE + " -";
+          title = "- " + trData.tabs.Type_BATTALE + " -";
           icon = "assets/BATTLE.png";
         } else if (tabId === "Type_COLLECTION") {
-          title = "- " + t.tabs.Type_COLLECTION + " -";
+          title = "- " + trData.tabs.Type_COLLECTION + " -";
           icon = "assets/COLLECTOR.png";
         } else if (tabId === "Type_CAREER") {
-          title = "- " + t.tabs.Type_CAREER + " -";
+          title = "- " + trData.tabs.Type_CAREER + " -";
           icon = "assets/CAREER.png";
         }
       }
@@ -677,20 +840,15 @@
         if (currentTab === "Type_EVENT") {
           let evTimeA = a.base.eventStartTime || "";
           let evTimeB = b.base.eventStartTime || "";
-          
-          if (evTimeA !== evTimeB) {
-              return evTimeB.localeCompare(evTimeA);
-          }
+          if (evTimeA !== evTimeB) return evTimeB.localeCompare(evTimeA);
           
           let timeA = parseInt(a.base.startTime || "0");
           let timeB = parseInt(b.base.startTime || "0");
-          if (timeA !== timeB) {
-              return timeB - timeA;
-          }
+          if (timeA !== timeB) return timeB - timeA;
         }
 
         if (a.base.sort !== b.base.sort) return (a.base.sort || 999) - (b.base.sort || 999);
-        return (a.base.name || "").localeCompare(b.base.name || "", 'en');
+        return (a.base.nameResolved || "").localeCompare(b.base.nameResolved || "", 'en');
       });
 
       elements.lblCategory.textContent = title;
@@ -703,7 +861,7 @@
     function renderSeasonFilter() {
       const select = document.createElement('select');
       select.className = "custom-select";
-      select.innerHTML = `<option value="ALL">${t.filters.allYears}</option>`;
+      select.innerHTML = `<option value="ALL">${tr[currentUILang].filters.allYears}</option>`;
       const years = [...new Set(fullData.seasonYearConfig.map(c => c.year))].sort().reverse();
       years.forEach(y => {
         select.innerHTML += `<option value="${y}">${y}</option>`;
@@ -719,11 +877,12 @@
     function renderEventFilter() {
       const select = document.createElement('select');
       select.className = "custom-select";
+      const trFilt = tr[currentUILang].filters;
       select.innerHTML = `
-        <option value="ALL">${t.filters.allEvents}</option>
-        <option value="61">${t.filters.anniv}</option>
-        <option value="69">${t.filters.collab}</option>
-        <option value="62">${t.filters.other}</option>
+        <option value="ALL">${trFilt.allEvents}</option>
+        <option value="61">${trFilt.anniv}</option>
+        <option value="69">${trFilt.collab}</option>
+        <option value="62">${trFilt.other}</option>
       `;
       select.value = currentFilter;
       select.addEventListener('change', (e) => {
@@ -739,7 +898,7 @@
         const isEvent = g.base.achType === "Type_EVENT";
         const isEasterEgg = g.base.achievementSubType === 29;
         const isObfuscated = isEasterEgg && currentTab !== "EASTER_EGG";
-        const baseName = parseHtmlColor(g.base.name);
+        const baseName = parseHtmlColor(g.base.nameResolved);
         const imgName = getFileName(g.base.iconCdn);
         
         let cardHtml = '';
@@ -784,21 +943,11 @@
       
       const idStr = awardId.toString();
       const item = itemsMap.get(idStr);
-      let urls = [];
+      const urls = getIconUrlsArrayObj(idStr, false, null);
       
-      if (updatedIconsSet.has(idStr)) urls.push(`'${ITEMS_BASE_URL}ff-icons/${idStr}_2.png'`);
-      urls.push(`'${ITEMS_BASE_URL}ff-icons/${idStr}.png'`);
-      
-      if (item && item.Icon) {
-        const iconStr = item.Icon.toString();
-        if (updatedIconsSet.has(iconStr)) urls.push(`'${ITEMS_BASE_URL}ff-icons/${iconStr}_2.png'`);
-        urls.push(`'${ITEMS_BASE_URL}ff-icons/${iconStr}.png'`);
-      }
-      urls.push(`'assets/UNKNOWN.png'`);
-      
-      const urlsArrayStr = `[${urls.join(',')}]`;
+      const urlsArrayStr = `[${urls.map(u => `'${u}'`).join(',')}]`;
       const errHandler = `let urls=${urlsArrayStr}; let idx = parseInt(this.dataset.idx || 0) + 1; if(idx < urls.length) { this.dataset.idx = idx; this.src = urls[idx]; } else { this.onerror=null; }`;
-      const initialUrl = urls[0].replace(/'/g, '');
+      const initialUrl = urls[0];
       const rareBgUrl = item ? getRarityBg(item.Rare) : getRarityBg('COMMON');
       
       return `
@@ -817,7 +966,7 @@
       const isEvent = group.base.achType === "Type_EVENT";
       const isEasterEgg = group.base.achievementSubType === 29;
       
-      const nameStr = parseHtmlColor(group.base.name);
+      const nameStr = parseHtmlColor(group.base.nameResolved);
       elements.modalTitle.innerHTML = nameStr;
       
       elements.easterEggBadge.style.display = isEasterEgg ? 'inline-flex' : 'none';
@@ -843,7 +992,7 @@
             <img src="${ICONS_DIR}${imgName}" class="event-modal-banner" alt="Event">
             <div class="event-modal-body">
               <h2 class="modal-header-title" style="margin-bottom:0;">${nameStr}</h2>
-              <div class="event-modal-desc">${t.eventDesc}</div>
+              <div class="event-modal-desc">${tr[currentUILang].eventDesc}</div>
               ${awardId ? getAwardImgHtml(awardId) : ''}
             </div>
           </div>
@@ -856,7 +1005,7 @@
         levelsToRender.forEach((lvl, index) => {
           const imgName = getFileName(lvl.iconCdn);
           const pts = lvl.conditions?.achievementPoints;
-          const desc = parseHtmlColor(lvl.desc);
+          const desc = parseHtmlColor(lvl.descResolved);
           
           let awardId = null;
           if (lvl.awards && lvl.awards.length > 0) awardId = lvl.awards[0].awardId;
@@ -908,30 +1057,23 @@
         this.style.opacity = '1';
       };
 
-      const fallbackUrl = ITEMS_BASE_URL + 'RareBG_Quality/UNKNOWN.png';
-      const imageSources = [];
-      const idStr = itemId.toString();
-      
-      if (updatedIconsSet.has(idStr)) imageSources.push(ITEMS_BASE_URL + `ff-icons/${idStr}_2.png`);
-      imageSources.push(ITEMS_BASE_URL + `ff-icons/${idStr}.png`);
-      
-      if (item && item.Icon) {
-        const iconStr = item.Icon.toString();
-        if (updatedIconsSet.has(iconStr)) imageSources.push(ITEMS_BASE_URL + `ff-icons/${iconStr}_2.png`);
-        imageSources.push(ITEMS_BASE_URL + `ff-icons/${iconStr}.png`);
-      }
-      imageSources.push(fallbackUrl);
+      const bannerObj = collectionBanners.find(b => b.itemID === parseInt(itemId));
+      const isBanner = !!bannerObj;
+      const bannerIconLower = (isBanner && bannerObj.icon) ? String(bannerObj.icon).toLowerCase() : null;
 
-      let currentSrcIndex = 0;
+      const urls = getIconUrlsArrayObj(itemId, isBanner, bannerIconLower);
+      
+      let currentIdx = 0;
       modalIconEl.onerror = function() {
-        currentSrcIndex++;
-        if (currentSrcIndex < imageSources.length) this.src = imageSources[currentSrcIndex];
+        currentIdx++;
+        if (currentIdx < urls.length) this.src = urls[currentIdx];
         else this.onerror = null;
       };
       
-      modalIconEl.src = imageSources[0];
+      modalIconEl.src = urls[0];
       
-      const nameStr = (item && item.Name && item.Name.trim() !== "") ? item.Name : t.unknownItem;
+      const trData = tr[currentUILang];
+      const nameStr = (item && item.NameText && item.NameText.trim() !== "") ? item.NameText : trData.unknownItem;
       const modalItemNameEl = document.getElementById('modalItemName');
       modalItemNameEl.textContent = nameStr;
       let nameLen = nameStr.length;
@@ -947,7 +1089,7 @@
       else if (idLen < 25) modalItemIdEl.style.fontSize = '0.7rem';
       else modalItemIdEl.style.fontSize = '0.6rem';
       
-      const iconStr = (item && item.Icon) ? item.Icon.toString() : "N/A";
+      const iconStr = (isBanner && bannerIconLower) ? bannerIconLower : (item && item.Icon ? item.Icon.toString() : itemId.toString());
       const modalIconIdEl = document.getElementById('modalItemIconId');
       modalIconIdEl.textContent = iconStr;
       let iconLen = iconStr.length;
@@ -957,7 +1099,7 @@
       else if (iconLen < 50) modalIconIdEl.style.fontSize = '0.5rem';
       else modalIconIdEl.style.fontSize = '0.45rem';
       
-      document.getElementById('modalItemDesc').textContent = (item && item.Desc && item.Desc.trim() !== "") ? item.Desc : t.noDesc;
+      document.getElementById('modalItemDesc').textContent = (item && item.DescText && item.DescText.trim() !== "") ? item.DescText : trData.noDesc;
       
       document.getElementById('btnCopyId').innerHTML = copyIconSVG;
       elements.itemModal.style.display = 'flex';
@@ -1002,6 +1144,7 @@
     }
 
     function switchRewardsTab(targetConfig) {
+      const trData = tr[currentUILang];
       document.querySelectorAll('.rew-tab').forEach(t => t.classList.remove('active'));
       document.querySelector(`.rew-tab[data-target="${targetConfig}"]`).classList.add('active');
       
@@ -1021,7 +1164,7 @@
           iconHtml = `<img src="assets/CAREER.png" alt="Icon">`;
       }
 
-      document.getElementById('rewCurrentPoints').innerHTML = `${svgCup} ${t.rewPointsDesc} ${pts}`;
+      document.getElementById('rewCurrentPoints').innerHTML = `${svgCup} ${trData.rewPointsDesc} ${pts}`;
       
       let html = '';
       const configArr = fullData[targetConfig] || [];
@@ -1037,7 +1180,7 @@
               <div class="rew-row">
                   <div class="rew-req">
                       ${iconHtml}
-                      <span>${tier.lowerBound} ${t.pts}</span>
+                      <span>${tier.lowerBound} ${trData.pts}</span>
                   </div>
                   <div class="rew-awards">
                       ${awardsHtml}
